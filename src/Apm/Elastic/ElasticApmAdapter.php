@@ -37,6 +37,8 @@ class ElasticApmAdapter implements ApmInterface
         foreach ($transaction->getSpans() as $span) {
             $this->includeSpan($apmTransaction, $span);
         }
+
+        $apmTransaction->end();
     }
 
     public function name(): string
