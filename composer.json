@@ -1,0 +1,36 @@
+{
+    "name": "pandawa/apm",
+    "description": "APM component for pandawa",
+    "keywords": [
+        "laravel",
+        "pandawa",
+        "apm"
+    ],
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Iqbal Maulana",
+            "email": "iq.bluejack@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.0",
+        "pandawa/pandawa": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pandawa\\Apm\\": "src/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        },
+        "laravel": {
+            "providers": [
+                "Pandawa\\Apm\\ApmModule"
+            ]
+        }
+    }
+}
