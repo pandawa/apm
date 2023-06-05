@@ -18,10 +18,6 @@ class RequestWatcher implements WatcherInterface
 {
     private ?string $type;
 
-    public function __construct(private AgentInterface $agent)
-    {
-    }
-
     public function setOptions(array $options = []): void
     {
         $this->type = $options['type'] ?? 'request';
@@ -34,13 +30,13 @@ class RequestWatcher implements WatcherInterface
 
     public function recordRequest(RequestHandled $event): void
     {
-        if (!$this->agent->hasTransaction()) {
+        if (!$this->agent()->hasTransaction()) {
             return;
         }
 
         $startTime = defined('LARAVEL_START') ? LARAVEL_START : $event->request->server('REQUEST_TIME_FLOAT');
 
-        $this->agent->addSpan(
+        $this->agent()->addSpan(
             new RequestSpan(
                 $this->type,
                 Carbon::now(),
@@ -50,6 +46,11 @@ class RequestWatcher implements WatcherInterface
                 $event->request->userAgent()
             )
         );
-        $this->agent->capture();
+        $this->agent()->capture();
+    }
+
+    private function agent(): AgentInterface
+    {
+        return app()->get(AgentInterface::class);
     }
 }

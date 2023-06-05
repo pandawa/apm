@@ -6,22 +6,17 @@ namespace Pandawa\Apm\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Router;
 use Pandawa\Apm\Contract\AgentInterface;
 use Pandawa\Apm\Transaction;
 
 /**
  * @author  Iqbal Maulana <iq.bluejack@gmail.com>
  */
-class StartRequestTransactionMiddleware
+class RequestBeginTransaction
 {
-    public function __construct(private AgentInterface $agent)
-    {
-    }
-
     public function handle(Request $request, Closure $next)
     {
-        if (!$this->agent->hasTransaction()) {
+        if (!$this->agent()->hasTransaction()) {
             $this->setupTransaction($request);
         }
 
@@ -30,7 +25,7 @@ class StartRequestTransactionMiddleware
 
     private function setupTransaction(Request $request): void
     {
-        $this->agent->setCurrentTransaction(
+        $this->agent()->setCurrentTransaction(
             new Transaction(
                 $this->getTransactionName($request),
                 $this->getTransactionType()
@@ -51,5 +46,10 @@ class StartRequestTransactionMiddleware
     private function getPath(Request $request): string
     {
         return '/' . ltrim($request->path(), '/');
+    }
+
+    private function agent(): AgentInterface
+    {
+        return app()->get(AgentInterface::class);
     }
 }

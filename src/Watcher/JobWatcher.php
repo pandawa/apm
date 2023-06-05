@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Pandawa\Apm\Watcher;
 
 use Carbon\Carbon;
-use Closure;
 use Illuminate\Contracts\Queue\Job;
-use Illuminate\Queue\CallQueuedClosure;
-use Illuminate\Queue\Events\JobProcessing;
-use Illuminate\Queue\Jobs\Job as QueueJob;
 use Illuminate\Foundation\Application;
+use Illuminate\Queue\CallQueuedClosure;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Queue\Events\JobQueued;
 use Pandawa\Apm\Contract\AgentInterface;
 use Pandawa\Apm\Contract\WatcherInterface;
@@ -26,10 +24,6 @@ use Pandawa\Component\Message\QueueEnvelope;
 class JobWatcher implements WatcherInterface
 {
     private ?string $type;
-
-    public function __construct(private AgentInterface $agent)
-    {
-    }
 
     public function setOptions(array $options = []): void
     {
@@ -51,7 +45,7 @@ class JobWatcher implements WatcherInterface
     {
         $this->startTransactionIfNotExists($event->job);
 
-        $this->agent->addSpan(
+        $this->agent()->addSpan(
             new JobSpan(
                 $this->type,
                 'queued',
@@ -65,7 +59,7 @@ class JobWatcher implements WatcherInterface
     {
         $this->startTransactionIfNotExists($event->job);
 
-        $this->agent->addSpan(
+        $this->agent()->addSpan(
             new JobSpan(
                 $this->type,
                 'processed',
@@ -73,14 +67,14 @@ class JobWatcher implements WatcherInterface
                 Carbon::now(),
             )
         );
-        $this->agent->capture();
+        $this->agent()->capture();
     }
 
     public function recordFailedJob(JobFailed $event): void
     {
         $this->startTransactionIfNotExists($event->job);
 
-        $this->agent->addSpan(
+        $this->agent()->addSpan(
             new JobSpan(
                 $this->type,
                 'failed',
@@ -88,13 +82,13 @@ class JobWatcher implements WatcherInterface
                 Carbon::now(),
             )
         );
-        $this->agent->capture();
+        $this->agent()->capture();
     }
 
     private function startTransactionIfNotExists(object|callable|string $job): void
     {
-        if (!$this->agent->hasTransaction()) {
-            $this->agent->setCurrentTransaction(
+        if (!$this->agent()->hasTransaction()) {
+            $this->agent()->setCurrentTransaction(
                 new Transaction(
                     $this->getJobName($job),
                     $this->type,
@@ -130,5 +124,10 @@ class JobWatcher implements WatcherInterface
         }
 
         return 'Unknown';
+    }
+
+    private function agent(): AgentInterface
+    {
+        return app()->get(AgentInterface::class);
     }
 }

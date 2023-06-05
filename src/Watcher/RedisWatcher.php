@@ -17,10 +17,6 @@ class RedisWatcher implements WatcherInterface
 {
     private ?string $type;
 
-    public function __construct(private AgentInterface $agent)
-    {
-    }
-
     public function setOptions(array $options = []): void
     {
         $this->type = $options['type'] ?? 'redis';
@@ -43,11 +39,11 @@ class RedisWatcher implements WatcherInterface
 
     public function recordCommand(CommandExecuted $event): void
     {
-        if (!$this->agent->hasTransaction()) {
+        if (!$this->agent()->hasTransaction()) {
             return;
         }
 
-        $this->agent->addSpan(
+        $this->agent()->addSpan(
             new RedisSpan(
                 $this->type,
                 $event->command,
@@ -55,5 +51,10 @@ class RedisWatcher implements WatcherInterface
                 $event->time
             )
         );
+    }
+
+    private function agent(): AgentInterface
+    {
+        return app()->get(AgentInterface::class);
     }
 }

@@ -17,10 +17,6 @@ use Pandawa\Component\Message\QueueEnvelope;
  */
 class RecordDispatched
 {
-    public function __construct(private AgentInterface $agent)
-    {
-    }
-
     public function handle($message, Closure $next)
     {
         if ($this->skipRecords($message)) {
@@ -31,7 +27,7 @@ class RecordDispatched
 
         $response = $next($message);
 
-        $this->agent->addSpan(
+        $this->agent()->addSpan(
             new MessageSpan(
                 'message',
                 $this->getMessageType($message),
@@ -45,7 +41,7 @@ class RecordDispatched
 
     private function skipRecords($message): bool
     {
-        if (!$this->agent->hasTransaction()) {
+        if (!$this->agent()->hasTransaction()) {
             return true;
         }
 
@@ -88,5 +84,10 @@ class RecordDispatched
         }
 
         return 'message';
+    }
+
+    private function agent(): AgentInterface
+    {
+        return app()->get(AgentInterface::class);
     }
 }

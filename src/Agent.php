@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Pandawa\Apm;
 
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Foundation\Application;
 use Pandawa\Apm\Contract\AgentInterface;
 use Pandawa\Apm\Contract\ApmInterface;
 use Pandawa\Apm\Contract\SpanInterface;
 use Pandawa\Apm\Contract\WatcherInterface;
 use Pandawa\Apm\Exception\MissingTransactionException;
-use Illuminate\Contracts\Http\Kernel;
-use Pandawa\Apm\Middleware\StartRequestTransactionMiddleware;
+use Pandawa\Apm\Middleware\RequestBeginTransaction;
 
 /**
  * @author  Iqbal Maulana <iq.bluejack@gmail.com>
@@ -87,13 +87,15 @@ class Agent implements AgentInterface
         $this->assertHasTransaction();
 
         $this->apms[$apm ?? $this->defaultApm]->capture($this->transaction);
+
+        $this->transaction = null;
     }
 
     private function startHttpTransaction(Application $app): void
     {
         if ($app->bound(Kernel::class)) {
             $kernel = $app->make(Kernel::class);
-            $kernel->prependMiddleware(StartRequestTransactionMiddleware::class);
+            $kernel->prependMiddleware(RequestBeginTransaction::class);
         }
     }
 

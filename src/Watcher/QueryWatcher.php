@@ -17,10 +17,6 @@ class QueryWatcher implements WatcherInterface
 {
     private ?string $type;
 
-    public function __construct(private AgentInterface $agent)
-    {
-    }
-
     public function setOptions(array $options = []): void
     {
         $this->type = $options['type'] ?? 'db';
@@ -33,11 +29,11 @@ class QueryWatcher implements WatcherInterface
 
     public function recordQuery(QueryExecuted $event): void
     {
-        if (!$this->agent->hasTransaction()) {
+        if (!$this->agent()->hasTransaction()) {
             return;
         }
 
-        $this->agent->addSpan(
+        $this->agent()->addSpan(
             new QuerySpan(
                 $this->type,
                 $event->connectionName,
@@ -45,5 +41,10 @@ class QueryWatcher implements WatcherInterface
                 $event->time
             )
         );
+    }
+
+    private function agent(): AgentInterface
+    {
+        return app()->get(AgentInterface::class);
     }
 }

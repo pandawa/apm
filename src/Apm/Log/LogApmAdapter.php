@@ -19,6 +19,8 @@ class LogApmAdapter implements ApmInterface
 {
     public function capture(Transaction $transaction): void
     {
+        logger("\n\n\n========== START ========== \n\n\n");
+
         logger(sprintf('===== TRANSACTION "%s - %s" STARTED =====', $transaction->getType(), $transaction->getName()));
 
         foreach ($transaction->getSpans() as $span) {
@@ -39,6 +41,9 @@ class LogApmAdapter implements ApmInterface
         logger(
             sprintf('===== TRANSACTION "%s - %s" ENDED =====', $transaction->getType(), $transaction->getName())."\n\n"
         );
+
+
+        logger("\n\n\n========== END ========== \n\n\n");
     }
 
     public function name(): string
